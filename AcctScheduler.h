@@ -63,6 +63,6 @@ public:
 	 
 	void doAccounting(PluginContext *);
 	
-	void parseStatusFile(PluginContext *, uint64_t *, uint64_t *,string);
+    bool parseStatusFile(PluginContext *, uint64_t *, uint64_t *,string);
 };
 #endif //_ACCT_SCHEDULER_H_
