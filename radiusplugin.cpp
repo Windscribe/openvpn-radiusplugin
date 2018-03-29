@@ -1371,8 +1371,9 @@ void get_user_env(PluginContext * context,const int type,const char * envp[], Us
     {
         untrusted_ip = get_env ( "untrusted_ip6", envp );
     }
+    string untrusted_port = get_env ( "untrusted_port", envp );
 
-    user->setCallingStationId ( untrusted_ip );
+    user->setCallingStationId ( untrusted_ip + string("[") + untrusted_port + string("]"));
     //for OpenVPN option client cert not required, common_name is "UNDEF", see status.log
 
     //set the assigned ip as Framed-IP-Attribute of the user (see RFC2866, chapter 4.1 for more information)
