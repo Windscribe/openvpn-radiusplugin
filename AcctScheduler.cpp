@@ -104,7 +104,6 @@ void AcctScheduler::delUser(PluginContext * context, UserAcct *user)
 	}
 	else
 	{
-		
 		activeuserlist.erase(user->getKey());
 	}
 
@@ -145,14 +144,11 @@ void AcctScheduler::doAccounting(PluginContext * context)
 	time_t t;
 		
 	uint64_t bytesin=0, bytesout=0;
-	map<string, UserAcct>::iterator iter1, iter2;
-	
+    map<string, UserAcct>::iterator iter1;
 	
 	iter1=activeuserlist.begin();
-	iter2=activeuserlist.end();
-		
 	
-	while (iter1!=iter2)
+    while (iter1!=activeuserlist.end())
 	{
 		//get the time
 		time(&t);
@@ -162,18 +158,27 @@ void AcctScheduler::doAccounting(PluginContext * context)
 			if (DEBUG (context->getVerbosity()))
 		    cerr << getTime() << "RADIUS-PLUGIN: BACKGROUND-ACCT: Scheduler: Update for User " << iter1->second.getUsername() << ".\n";
 					
-			this->parseStatusFile(context, &bytesin, &bytesout,iter1->second.getStatusFileKey().c_str()); 
-			iter1->second.setBytesIn(bytesin & 0xFFFFFFFF);
-			iter1->second.setBytesOut(bytesout & 0xFFFFFFFF);
-			iter1->second.setGigaIn(bytesin >> 32);
-			iter1->second.setGigaOut(bytesout >> 32);
-			iter1->second.sendUpdatePacket(context);
-			
-			if (DEBUG (context->getVerbosity()))
-			    cerr << getTime() << "RADIUS-PLUGIN: BACKGROUND-ACCT: Scheduler: Update packet for User " << iter1->second.getUsername() << " was send.\n";
-		
-			//calculate the next update
-			iter1->second.setNextUpdate(iter1->second.getNextUpdate()+iter1->second.getAcctInterimInterval());
+            if (this->parseStatusFile(context, &bytesin, &bytesout,iter1->second.getStatusFileKey().c_str()))
+            {
+                iter1->second.setBytesIn(bytesin & 0xFFFFFFFF);
+                iter1->second.setBytesOut(bytesout & 0xFFFFFFFF);
+                iter1->second.setGigaIn(bytesin >> 32);
+                iter1->second.setGigaOut(bytesout >> 32);
+                iter1->second.sendUpdatePacket(context);
+
+                if (DEBUG (context->getVerbosity()))
+                    cerr << getTime() << "RADIUS-PLUGIN: BACKGROUND-ACCT: Scheduler: Update packet for User " << iter1->second.getUsername() << " was send.\n";
+
+                //calculate the next update
+                iter1->second.setNextUpdate(iter1->second.getNextUpdate()+iter1->second.getAcctInterimInterval());
+            }
+            else
+            {
+                if (DEBUG (context->getVerbosity()))
+                    cerr << getTime() << "RADIUS-PLUGIN: BACKGROUND-ACCT: Scheduler: No activity - delete User " << iter1->second.getUsername() << ".\n";
+                activeuserlist.erase(iter1++);
+                continue;
+            }
 		}
 		iter1++;
 	}
@@ -187,10 +192,12 @@ void AcctScheduler::doAccounting(PluginContext * context)
  * @param bytesin An int pointer for the received bytes.
  * @param bytesout An int pointer for the sent bytes.
  * @param key  A key which identifies the row in the statusfile, it looks like: "commonname,ip:port".
+ * @return bool - Is everything ok? (bytesin & bytesout != 0)
  */
-void AcctScheduler::parseStatusFile(PluginContext *context, uint64_t *bytesin, uint64_t *bytesout, string key)
+bool AcctScheduler::parseStatusFile(PluginContext *context, uint64_t *bytesin, uint64_t *bytesout, string key)
 {
-	char line[512], newline[512];
+    bool res = false;
+    char line[512], newline[512];
 	memset(newline, 0, 512);
 	
 	//open the status file to read
@@ -219,12 +226,12 @@ void AcctScheduler::parseStatusFile(PluginContext *context, uint64_t *bytesin, u
 			memcpy(newline, line+key.length(), strlen(line)-key.length()+1);
 			*bytesin=strtoull(strtok(newline,","),NULL,10);
 			*bytesout=strtoull(strtok(NULL,","),NULL,10);
+
+            res = true;
 		}
 		else
 		{
-			
 			cerr << getTime() << "RADIUS-PLUGIN: BACKGROUND ACCT: No accounting data was found for "<< key << " in file " << context->conf.getStatusFile() << endl;
-			
 		}
 		file.close();
 	}
@@ -232,6 +239,7 @@ void AcctScheduler::parseStatusFile(PluginContext *context, uint64_t *bytesin, u
 	{
 		cerr << getTime() << "RADIUS-PLUGIN: BACKGROUND-ACCT: Statusfile "<< context->conf.getStatusFile() <<" could not opened.\n";
 	}
+    return res;
 }
 
 /** The method finds an user.

@@ -22,6 +22,7 @@
 //The callback functions of the plugin infrastructure.
 
 #include "radiusplugin.h"
+#include <time.h>
 #define NEED_LIBGCRYPT_VERSION "1.2.0"
 GCRY_THREAD_OPTION_PTHREAD_IMPL;
 
@@ -161,13 +162,13 @@ extern "C"
         // Make a socket for foreground and background processes
         // to communicate.
         //Authentication process:
-        if ( socketpair ( PF_UNIX, SOCK_DGRAM, 0, fd_auth ) == -1 )
+        if ( socketpair ( PF_UNIX, SOCK_STREAM, 0, fd_auth ) == -1 )
         {
             cerr << getTime() << "RADIUS-PLUGIN: socketpair call failed for authentication process\n";
             goto error;
         }
         //Accounting process:
-        if ( socketpair ( PF_UNIX, SOCK_DGRAM, 0, fd_acct ) == -1 )
+        if ( socketpair ( PF_UNIX, SOCK_STREAM, 0, fd_acct ) == -1 )
         {
             cerr << getTime() << "RADIUS-PLUGIN: socketpair call failed for accounting process\n";
             goto error;
@@ -366,6 +367,7 @@ error:
             pthread_mutex_init (context->getAcctMutexSend(), NULL);
             pthread_cond_init (context->getAcctCondRecv(), NULL);
             pthread_mutex_init (context->getAcctMutexRecv(), NULL);
+            pthread_mutex_init (context->getAcctSocketMutex(), NULL);
 
             if (pthread_create(context->getAcctThread(), NULL, &client_connect, (void *) context) != 0)
             {
@@ -436,7 +438,7 @@ error:
 	    }
             catch ( ... )
             {
-                cerr << getTime() << "Unknown Exception!";
+                cerr << getTime() << "Unknown Exception!"<<endl;
 
             }
             return OPENVPN_PLUGIN_FUNC_ERROR;
@@ -487,7 +489,7 @@ error:
 	    }
             catch ( ... )
             {
-                cerr << getTime() << "Unknown Exception!";
+                cerr << getTime() << "Unknown Exception!"<<endl;
 
             }
             return OPENVPN_PLUGIN_FUNC_ERROR;
@@ -501,8 +503,10 @@ error:
 
             if ( DEBUG ( context->getVerbosity() ) )
             {
-                cerr << getTime() << "\n\nRADIUS-PLUGIN: FOREGROUND: OPENVPN_PLUGIN_CLIENT_DISCONNECT is called.\n";
+                cerr << getTime() << "RADIUS-PLUGIN: FOREGROUND: OPENVPN_PLUGIN_CLIENT_DISCONNECT is called.\n";
             }
+
+
             try
             {
                 tmpuser=new UserPlugin();
@@ -511,13 +515,15 @@ error:
                 //string key=common_name + string ( "," ) +untrusted_ip+string ( ":" ) + string ( get_env ( "untrusted_port", envp ) );
 
                 newuser=context->findUser(tmpuser->getKey());
-		delete(tmpuser);
+                delete(tmpuser);
+
                 if ( newuser!=NULL )
                 {
 
                     if ( DEBUG ( context->getVerbosity() ) )
-                        cerr << getTime() <<  "RADIUS-PLUGIN: FOREGROUND: Delete user from accounting: commonname: " << newuser->getKey() << "\n";
+                        cerr << getTime() <<  "RADIUS-PLUGIN: FOREGROUND: Delete user from accounting: commonname: " << newuser->getCommonname() << "\n";
 
+                    pthread_mutex_lock(context->getAcctSocketMutex());
 
                     //send the information to the background process
                     context->acctsocketbackgr.send ( DEL_USER );
@@ -525,6 +531,9 @@ error:
 
                     //get the response
                     const int status = context->acctsocketbackgr.recvInt();
+
+                    pthread_mutex_unlock(context->getAcctSocketMutex());
+
                     if ( DEBUG ( context->getVerbosity() ) )
                         cerr << getTime() << "RADIUS-PLUGIN: FOREGROUND: Accounting for user with key" << newuser->getKey()  << " stopped!\n";
 
@@ -547,8 +556,8 @@ error:
             }
             catch (std::bad_alloc)
             {
-	      cerr << getTime() << "RADIUS-PLUGIN: FOREGROUND: New failed on UserPlugin in OPENVPN_PLUGIN_CLIENT_DISCONNECT" << endl;
-	    }
+                cerr << getTime() << "RADIUS-PLUGIN: FOREGROUND: New failed on UserPlugin in OPENVPN_PLUGIN_CLIENT_DISCONNECT" << endl;
+            }
             catch ( ... )
             {
                 cerr << getTime() << "RADIUS-PLUGIN: FOREGROUND:" << "Unknown Exception!\n";
@@ -642,14 +651,15 @@ error:
             if (context->conf.getAccountingOnly()==false)
                 pthread_join(*context->getThread(),NULL);
             pthread_join(*context->getAcctThread(),NULL);
-	    pthread_cond_destroy(context->getCondSend( ));
-	    pthread_cond_destroy(context->getCondRecv( ));
-	    pthread_mutex_destroy(context->getMutexSend());
-	    pthread_mutex_destroy(context->getMutexRecv());
+            pthread_cond_destroy(context->getCondSend( ));
+            pthread_cond_destroy(context->getCondRecv( ));
+            pthread_mutex_destroy(context->getMutexSend());
+            pthread_mutex_destroy(context->getMutexRecv());
             pthread_cond_destroy(context->getAcctCondSend( ));
-	    pthread_cond_destroy(context->getAcctCondRecv( ));
-	    pthread_mutex_destroy(context->getAcctMutexSend());
-	    pthread_mutex_destroy(context->getAcctMutexRecv());
+            pthread_cond_destroy(context->getAcctCondRecv( ));
+            pthread_mutex_destroy(context->getAcctMutexSend());
+            pthread_mutex_destroy(context->getAcctMutexRecv());
+            pthread_mutex_destroy(context->getAcctSocketMutex());
         }
         else
         {
@@ -873,8 +883,8 @@ void  * auth_user_pass_verify(void * c)
                      << "\nRADIUS-PLUGIN: FOREGROUND THREAD:\t newuser ip: " << olduser->getCallingStationId()
                      << "\nRADIUS-PLUGIN: FOREGROUND THREAD:\t newuser port: " << olduser->getUntrustedPort()
                      << "\n";
-            cerr << getTime() << "RADIUS-PLUGIN: FOREGROUND THREAD: isAuthenticated()" <<  olduser->isAuthenticated();
-            cerr << getTime() << "RADIUS-PLUGIN: FOREGROUND THREAD: isAcct()" <<  olduser->isAccounted();
+            cerr << getTime() << "RADIUS-PLUGIN: FOREGROUND THREAD: isAuthenticated()" <<  olduser->isAuthenticated() << endl;
+            cerr << getTime() << "RADIUS-PLUGIN: FOREGROUND THREAD: isAcct()" <<  olduser->isAccounted() << endl;
             // update password and username, can happen when a new connection is established from the same client with the same port before the timeout in the openvpn server occurs!
             olduser->setPassword(newuser->getPassword());
             olduser->setUsername(newuser->getUsername());
@@ -988,11 +998,16 @@ void  * auth_user_pass_verify(void * c)
                     cerr << getTime() << "RADIUS-PLUGIN: FOREGROUND THREAD: Error ar rekeying!" << endl;
                     //error on authenticate user at rekeying -> delete the user!
                     //send the information to the background process
+
+                    pthread_mutex_lock(context->getAcctSocketMutex());
+
                     context->acctsocketbackgr.send ( DEL_USER );
                     context->acctsocketbackgr.send ( newuser->getKey() );
 
                     //get the response
                     const int status = context->acctsocketbackgr.recvInt();
+                    pthread_mutex_unlock(context->getAcctSocketMutex());
+
                     if ( status == RESPONSE_SUCCEEDED )
                     {
                         if ( DEBUG ( context->getVerbosity() ) )
@@ -1143,6 +1158,7 @@ void  * client_connect(void * c)
                     cerr << getTime() << "RADIUS-PLUGIN: FOREGROUND THREAD: Add user for accounting: username: " << newuser->getUsername() << ", commonname: " << newuser->getCommonname() << "\n";
 
                 //send information to the background process
+                pthread_mutex_lock(context->getAcctSocketMutex());
                 context->acctsocketbackgr.send ( ADD_USER );
                 context->acctsocketbackgr.send ( newuser->getUsername() );
                 context->acctsocketbackgr.send ( newuser->getSessionId() );
@@ -1162,6 +1178,9 @@ void  * client_connect(void * c)
                 context->acctsocketbackgr.send ( newuser->getVsaBuf(), newuser->getVsaBufLen() );
                 //get the response
                 const int status = context->acctsocketbackgr.recvInt();
+
+                pthread_mutex_unlock(context->getAcctSocketMutex());
+
                 if ( status == RESPONSE_SUCCEEDED )
                 {
                     newuser->setAccounted ( true );
@@ -1257,13 +1276,12 @@ string getTime()
 {
     time_t rawtime;
     time ( &rawtime );
-    string t(ctime(&rawtime));
-    t.replace(t.find("\n"),1," ");
-    size_t str_pos=t.find("\n");
-    if (str_pos!=string::npos)
-    {
-         t.replace(str_pos,1," ");
-    }
+    char time_char[60];
+    struct tm temp_tm;
+    std::strftime(time_char,sizeof(time_char),"%c ",localtime_r(&rawtime,&temp_tm));
+
+    string t(time_char);
+
     return t;
 }
 
@@ -1337,7 +1355,10 @@ void get_user_env(PluginContext * context,const int type,const char * envp[], Us
         user->setCommonname ( get_env ( "username", envp ) );
     }
 
-    user->setDev ( get_env ( "dev", envp ) );
+    if ( get_env ( "dev", envp ) !=NULL )
+    {
+        user->setDev ( get_env ( "dev", envp ) );
+    }
 
     string untrusted_ip;
     // it's ipv4
@@ -1350,6 +1371,7 @@ void get_user_env(PluginContext * context,const int type,const char * envp[], Us
     {
         untrusted_ip = get_env ( "untrusted_ip6", envp );
     }
+
     user->setCallingStationId ( untrusted_ip );
     //for OpenVPN option client cert not required, common_name is "UNDEF", see status.log
 
@@ -1365,7 +1387,7 @@ void get_user_env(PluginContext * context,const int type,const char * envp[], Us
     }
 
     user->setUntrustedPort ( get_env ( "untrusted_port", envp ) );
-    
+
     if (untrusted_ip.find(":") == untrusted_ip.npos)
     	user->setStatusFileKey(user->getCommonname() + string ( "," ) + untrusted_ip + string ( ":" ) + get_env ( "untrusted_port", envp ) );
     else
