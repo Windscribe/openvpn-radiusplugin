@@ -50,14 +50,15 @@ protected:
 	string framedip;		/**<The framed ip.*/
 	string framedroutes6;		/**<The framed IPv6 routes, they are stored as a string. If there are more routes, they must be delimited by an ';'*/
 	string framedip6;		/**<The framed ipv6.*/
-	string callingstationid;	/**<The calling station id, in this case the real ip address of the client.*/
-	string key;			/**<A unique key to find the user in a map. */
+    string calledstationid;	/**<The calling station id, in this case the real ip address of the client.*/
+    string callingstationid;	/**<The calling station id, in this case the real ip address of the client.*/
+    string key;			/**<A unique key to find the user in a map. */
 	string statusfilekey;		/**<Unique identifier in the status log file (version 1) "commonname,untrusted_ip:untrusted_port"*/
 	int portnumber;			/**<The portnumber.*/
 	time_t acctinteriminterval;	/**<The acct interim interval.*/
 	string untrustedport;		/**<The untrusted port number from OpenVPN for a client.*/
-	//string trustedport;		/**<The trusted port number from OpenVPN for a client.*/
-	//string trustedip;		/**<The trusted ip from OpenVPN for a client.*/
+    //string trustedport;		/**<The trusted port number from OpenVPN for a client.*/
+    //string trustedip;		/**<The trusted ip from OpenVPN for a client.*/
 	Octet * vsabuf;			/**<Buffer for all VSA attributes.*/
 	unsigned int vsabuflen;		/**<Length of vsabuf.*/
 	string sessionid;		/**<The user sessionid.*/
@@ -100,7 +101,10 @@ public:
 	string getCallingStationId(void);
 	void setCallingStationId(string);
 	
-	int getPortnumber(void);
+    string getCalledStationId(void);
+    void setCalledStationId(string);
+
+    int getPortnumber(void);
 	void setPortnumber(int);
 	
 	time_t getAcctInterimInterval(void);
@@ -119,12 +123,12 @@ public:
 	string getSessionId(void);
 	void setSessionId(string);
 
-// 	void setTrustedPort ( const string& theValue );
+//  void setTrustedPort ( const string& theValue );
 // 	
 // 
 // 	string getTrustedPort() const;
 // 
-// 	void setTrustedIp ( const string& theValue );
+//  void setTrustedIp ( const string& theValue );
 // 	
 // 
 // 	string getTrustedIp() const;

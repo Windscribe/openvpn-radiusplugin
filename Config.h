@@ -39,7 +39,6 @@ using namespace std;
 class Config
 {
 private:
-			
     string ccdPath; 				/**<The client config dir, where the plugin writes the config informations (framed routes & ip address of the client)*/
     string statusfile; 				/**< The path and filename of the status file, where openvpn writes the status information.*/ 
 	char subnet[16];				/**<The subnet which is assigned to the client in topology option.*/
@@ -51,11 +50,15 @@ private:
 	bool clientcertnotrequired;		/**<For OpenVPN option client_cert_not_required, commonname = UNDEF.*/
 	string openvpnconfig;			/**<Path to OpenVPN config.*/
 	bool overwriteccfiles; 			/**<If true the plugin overwrites the client config files.*/
-        bool useauthcontrolfile;                /**<If true and the OpenVPN version supports auth control files, the acf is used.*/
-        bool useclientconnectdeferfile;         /**<If true and the OpenVPN version supports client-connect defer files, it is used.*/
-        bool accountingonly;			/**<Only the accounting is done by the plugin.*/
+    bool useauthcontrolfile;                /**<If true and the OpenVPN version supports auth control files, the acf is used.*/
+    bool useclientconnectdeferfile;         /**<If true and the OpenVPN version supports client-connect defer files, it is used.*/
+    bool accountingonly;			/**<Only the accounting is done by the plugin.*/
 	bool nonfatalaccounting;		/**<If errors during the accounting occurs, the users can still connect.*/
 	int defacctinteriminterval;		/**<Default Acct-Interim-Interval in seconds.*/
+    string localip;
+    string localport;
+    string localproto;
+
 	void deletechars(string * );
 	
 public:
@@ -64,8 +67,6 @@ public:
 	~Config();
 	
 	int parseConfigFile(const char * configfile);
-	
-		
 	
 	void getValue(const char * text, char * value);
 		
@@ -99,10 +100,10 @@ public:
 	bool getOverWriteCCFiles(void);
 	void setOverWriteCCFiles(bool);
 
-        bool getUseAuthControlFile(void);
+    bool getUseAuthControlFile(void);
 	void setUseAuthControlFile(bool);
 
-        bool getUseClientConnectDeferFile(void);
+    bool getUseClientConnectDeferFile(void);
 	void setUseClientConnectDeferFile(bool);
 	
 	bool getAccountingOnly(void);
@@ -116,6 +117,15 @@ public:
 	
 	string getOpenVPNConfig(void);
 	void setOpenVPNConfig(string);
+
+    string getLocalIp();
+    void setLocalIp(string &ip);
+
+    string getLocalPort();
+    void setLocalPort(string &port);
+
+    string getLocalProto();
+    void setLocalProto(string &proto);
 };
 
 #endif //_CONFIG_H_

@@ -30,7 +30,7 @@ User::User()
 	this->framedip6="";
 	this->framedroutes6="";
 	this->key="";
-        this->statusfilekey="";
+    this->statusfilekey="";
 	this->untrustedport="";
 //         this->trustedport="";
 //         this->trustedip="";
@@ -80,8 +80,9 @@ User & User::operator=(const User & u)
 	this->framedip6=u.framedip6;
 	this->framedroutes6=u.framedroutes6;
 	this->key=u.key;
-        this->statusfilekey=u.statusfilekey;
-	this->callingstationid=u.callingstationid;
+    this->statusfilekey=u.statusfilekey;
+    this->calledstationid=u.calledstationid;
+    this->callingstationid=u.callingstationid;
 	this->portnumber=u.portnumber;
 	this->acctinteriminterval=u.acctinteriminterval;
 	this->untrustedport=u.untrustedport;
@@ -123,8 +124,9 @@ User::User(const User & u)
 	this->framedip6=u.framedip6;
 	this->framedroutes6=u.framedroutes6;
 	this->key=u.key;
-        this->statusfilekey=u.statusfilekey;
-	this->callingstationid=u.callingstationid;
+    this->statusfilekey=u.statusfilekey;
+    this->calledstationid=u.calledstationid;
+    this->callingstationid=u.callingstationid;
 	this->portnumber=u.portnumber;
 	this->acctinteriminterval=u.acctinteriminterval;
 	this->untrustedport=u.untrustedport;
@@ -282,6 +284,18 @@ void User::setCallingStationId(string id)
 {
 	this->callingstationid=id;
 }
+/** The getter method for the calling station id.
+ *  @return The called station id as a string.*/
+string User::getCalledStationId(void)
+{
+    return this->calledstationid;
+}
+/** The setter method for the callingstationid.
+ * @param id The calledstationid.*/
+void User::setCalledStationId(string id)
+{
+    this->calledstationid=id;
+}
 
 /** The getter method for the portnumber.
  *  @return The portnumber as an integer.*/
@@ -417,31 +431,31 @@ void User::setSessionId(string id)
 /** The getter method for trusted port.
  * @return trusted port
  */
-// string User::getTrustedPort() const
-// {
-// 	return trustedport;
-// }
+//string User::getTrustedPort() const
+//{
+//    return trustedport;
+//}
 
 /**The setter method for trusted port.
  * @param The trusted port number as string.
  */
-// void User::setTrustedPort ( const string& port )
-// {
-// 	trustedport = port;
-// }
+//void User::setTrustedPort ( const string& port )
+//{
+//    trustedport = port;
+//}
 
 /** The getter method for trusted ip.
  * @return trusted ip
  */
-// string User::getTrustedIp() const
-// {
-// 	return trustedip;
-// }
+//string User::getTrustedIp() const
+//{
+//    return trustedip;
+//}
 
 /**The setter method for trusted ip.
  * @param The trusted ip as string.
  */
-// void User::setTrustedIp ( const string& ip )
-// {
-// 	trustedip = ip;
-// }
+//void User::setTrustedIp ( const string& ip )
+//{
+//    trustedip = ip;
+//}

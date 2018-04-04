@@ -105,13 +105,14 @@ int UserAcct::sendUpdatePacket(PluginContext *context)
 	RadiusAttribute		ra1(ATTRIB_User_Name,this->getUsername()),
 				ra2(ATTRIB_Framed_IP_Address,this->getFramedIp()),
 				ra3(ATTRIB_NAS_Port,this->getPortnumber()),
-				ra4(ATTRIB_Calling_Station_Id,this->getCallingStationId()),
-				ra5(ATTRIB_NAS_Identifier),
+                ra3_(ATTRIB_Called_Station_Id,this->getCalledStationId()),
+                ra4(ATTRIB_Calling_Station_Id,this->getCallingStationId()),
+                ra5(ATTRIB_NAS_Identifier),
 				ra6(ATTRIB_NAS_IP_Address),
 				ra7(ATTRIB_NAS_Port_Type),
 				ra8(ATTRIB_Service_Type),
 				ra9(ATTRIB_Acct_Session_ID, this->getSessionId()),
-		                ra10(ATTRIB_Acct_Status_Type,string("3")), // "Alive"
+                ra10(ATTRIB_Acct_Status_Type,string("3")), // "Alive"
 				ra11(ATTRIB_Framed_Protocol),
 				ra12(ATTRIB_Acct_Input_Octets, this->bytesin),
 				ra13(ATTRIB_Acct_Output_Octets, this->bytesout),
@@ -143,7 +144,12 @@ int UserAcct::sendUpdatePacket(PluginContext *context)
 		cerr << getTime() << "RADIUS-PLUGIN: BACKGROUND-ACCT:  Fail to add attribute ATTRIB_NAS_Port.\n";
 	}
 	
-	if (packet.addRadiusAttribute(&ra4))
+    if (packet.addRadiusAttribute(&ra3_))
+    {
+        cerr << getTime() << "RADIUS-PLUGIN: BACKGROUND-ACCT:  Fail to add attribute ATTRIB_Called_Station_Id.\n";
+    }
+
+    if (packet.addRadiusAttribute(&ra4))
 	{
 		cerr << getTime() << "RADIUS-PLUGIN: BACKGROUND-ACCT:  Fail to add attribute ATTRIB_Calling_Station_Id.\n";
 	}
@@ -284,7 +290,8 @@ int UserAcct::sendStartPacket(PluginContext * context)
 	RadiusAttribute		ra1(ATTRIB_User_Name,this->getUsername()),
 						ra2(ATTRIB_Framed_IP_Address,this->getFramedIp()),
 						ra3(ATTRIB_NAS_Port,this->getPortnumber()),
-						ra4(ATTRIB_Calling_Station_Id,this->getCallingStationId()),
+                        ra3_(ATTRIB_Called_Station_Id,this->getCalledStationId()),
+                        ra4(ATTRIB_Calling_Station_Id,this->getCallingStationId()),
 						ra5(ATTRIB_NAS_Identifier),
 						ra6(ATTRIB_NAS_IP_Address),
 						ra7(ATTRIB_NAS_Port_Type),
@@ -315,7 +322,11 @@ int UserAcct::sendStartPacket(PluginContext * context)
 	{
 		cerr << getTime() << "RADIUS-PLUGIN: BACKGROUND-ACCT:  Fail to add attribute ATTRIB_NAS_Port.\n";
 	}
-	if (packet.addRadiusAttribute(&ra4))
+    if (packet.addRadiusAttribute(&ra3_))
+    {
+        cerr << getTime() << "RADIUS-PLUGIN: BACKGROUND-ACCT:  Fail to add attribute ATTRIB_Called_Station_Id.\n";
+    }
+    if (packet.addRadiusAttribute(&ra4))
 	{
 		cerr << getTime() << "RADIUS-PLUGIN: BACKGROUND-ACCT:  Fail to add attribute ATTRIB_Calling_Station_Id.\n";
 	}
@@ -441,8 +452,9 @@ int UserAcct::sendStopPacket(PluginContext * context)
 	RadiusAttribute		ra1(ATTRIB_User_Name,this->getUsername()),
 				ra2(ATTRIB_Framed_IP_Address,this->getFramedIp()),
 				ra3(ATTRIB_NAS_Port,this->portnumber),
-				ra4(ATTRIB_Calling_Station_Id,this->getCallingStationId()),
-				ra5(ATTRIB_NAS_Identifier),
+                ra3_(ATTRIB_Called_Station_Id,this->getCalledStationId()),
+                ra4(ATTRIB_Calling_Station_Id,this->getCallingStationId()),
+                ra5(ATTRIB_NAS_Identifier),
 				ra6(ATTRIB_NAS_IP_Address),
 				ra7(ATTRIB_NAS_Port_Type),
 				ra8(ATTRIB_Service_Type),
@@ -477,7 +489,11 @@ int UserAcct::sendStopPacket(PluginContext * context)
 	{
 		cerr << getTime() << "RADIUS-PLUGIN: BACKGROUND-ACCT:  Fail to add attribute ATTRIB_NAS_Port.\n";
 	}
-	if (packet.addRadiusAttribute(&ra4))
+    if (packet.addRadiusAttribute(&ra3_))
+    {
+        cerr << getTime() << "RADIUS-PLUGIN: BACKGROUND-ACCT:  Fail to add attribute ATTRIB_Called_Station_Id.\n";
+    }
+    if (packet.addRadiusAttribute(&ra4))
 	{
 		cerr << getTime() << "RADIUS-PLUGIN: BACKGROUND-ACCT:  Fail to add attribute ATTRIB_Calling_Station_Id.\n";
 	}

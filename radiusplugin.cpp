@@ -389,10 +389,6 @@ error:
         UserPlugin 	*newuser=NULL; 	/**< A context for an new user.*/
         UserPlugin 	*tmpuser=NULL; 	/**< A context for an temporary user.*/
 
-        string common_name;			/**<A string for the common_name from the environment.*/
-        string untrusted_ip;			/** untrusted_ip for ipv6 support **/
-
-
         ///////////// OPENVPN_PLUGIN_AUTH_USER_PASS_VERIFY
         if ( type == OPENVPN_PLUGIN_AUTH_USER_PASS_VERIFY && ( context->authsocketbackgr.getSocket() ) >= 0 )
         {
@@ -880,8 +876,6 @@ void  * auth_user_pass_verify(void * c)
                      << "\nRADIUS-PLUGIN: FOREGROUND THREAD:\t olduser ip: " << olduser->getCallingStationId()
                      << "\nRADIUS-PLUGIN: FOREGROUND THREAD:\t olduser port: " << olduser->getUntrustedPort()
                      << "\nRADIUS-PLUGIN: FOREGROUND THREAD:\t olduser FramedIP: " << olduser->getFramedIp()
-                     << "\nRADIUS-PLUGIN: FOREGROUND THREAD:\t newuser ip: " << olduser->getCallingStationId()
-                     << "\nRADIUS-PLUGIN: FOREGROUND THREAD:\t newuser port: " << olduser->getUntrustedPort()
                      << "\n";
             cerr << getTime() << "RADIUS-PLUGIN: FOREGROUND THREAD: isAuthenticated()" <<  olduser->isAuthenticated() << endl;
             cerr << getTime() << "RADIUS-PLUGIN: FOREGROUND THREAD: isAcct()" <<  olduser->isAccounted() << endl;
@@ -905,8 +899,8 @@ void  * auth_user_pass_verify(void * c)
 
         if ( DEBUG ( context->getVerbosity() ) )
             cerr << getTime() << "RADIUS-PLUGIN: FOREGROUND THREAD: New user: username: "<< newuser->getUsername()  <<", password: *****"
-                 << ", newuser ip: " << newuser->getCallingStationId()
-                 << ", newuser port: " << newuser->getUntrustedPort() << " ." << endl;
+                 << ", newuser calling: " << newuser->getCallingStationId()
+                 << ", newuser called: " << newuser->getCalledStationId() << "." << endl;
 
         //there must be a username
         if ( newuser->getUsername().size() > 0 )  //&& olduser==NULL)
@@ -985,7 +979,7 @@ void  * auth_user_pass_verify(void * c)
                     pthread_mutex_lock(context->getMutexRecv());
                     context->setResult(OPENVPN_PLUGIN_FUNC_SUCCESS);
                     
-		    pthread_cond_signal( context->getCondRecv( ));
+                    pthread_cond_signal( context->getCondRecv( ));
                     pthread_mutex_unlock (context->getMutexRecv());
 
                 }
@@ -1142,6 +1136,7 @@ void  * client_connect(void * c)
                 newuser->setFramedRoutes(tmpuser->getFramedRoutes());
                 newuser->setFramedRoutes6(tmpuser->getFramedRoutes6());
                 newuser->setClientConnectDeferFile(tmpuser->getClientConnectDeferFile());
+                newuser->setCalledStationId(tmpuser->getCalledStationId());
 
                 delete(tmpuser);
             }
@@ -1164,6 +1159,7 @@ void  * client_connect(void * c)
                 context->acctsocketbackgr.send ( newuser->getSessionId() );
                 context->acctsocketbackgr.send ( newuser->getDev() );
                 context->acctsocketbackgr.send ( newuser->getPortnumber() );
+                context->acctsocketbackgr.send ( newuser->getCalledStationId() );
                 context->acctsocketbackgr.send ( newuser->getCallingStationId() );
                 context->acctsocketbackgr.send ( newuser->getFramedIp() );
                 context->acctsocketbackgr.send ( newuser->getFramedIp6() );
@@ -1397,4 +1393,7 @@ void get_user_env(PluginContext * context,const int type,const char * envp[], Us
     if ( DEBUG ( context->getVerbosity() ) ) cerr << getTime() << "RADIUS-PLUGIN: FOREGROUND: StatusFileKey: " << user->getStatusFileKey() << endl;
     user->setKey(untrusted_ip + string ( ":" ) + get_env ( "untrusted_port", envp ) );
     if ( DEBUG ( context->getVerbosity() ) ) cerr << getTime() << "RADIUS-PLUGIN: FOREGROUND: Key: " << user->getKey() << ".\n";
+
+    user->setCalledStationId(context->conf.getLocalIp() + string("[") + context->conf.getLocalPort() + string("]:") + context->conf.getLocalProto());
+    if ( DEBUG ( context->getVerbosity() ) ) cerr << getTime() << "RADIUS-PLUGIN: FOREGROUND: CalledStationId: " << user->getCalledStationId() << ".\n";
 }

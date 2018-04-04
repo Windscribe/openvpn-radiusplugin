@@ -32,8 +32,8 @@ Config::Config(void)
 	this->usernameascommonname=false;
 	this->clientcertnotrequired=false;
 	this->overwriteccfiles=true;
-        this->useauthcontrolfile=false;
-        this->useclientconnectdeferfile=false;
+    this->useauthcontrolfile=false;
+    this->useclientconnectdeferfile=false;
 	this->accountingonly=false;
 	this->nonfatalaccounting=false;
 	this->defacctinteriminterval=0;
@@ -44,6 +44,9 @@ Config::Config(void)
 	memset(this->subnet,0,16);
 	memset(this->p2p,0,16);
 	memset(this->p2p6,0,40);
+    this->localip="0.0.0.0";
+    this->localport="";
+    this->localproto="unknown";
 }
 
 /** The constructor initializes all char arrays with 0. After the initialization
@@ -64,11 +67,14 @@ Config::Config(char * configfile)
 	this->usernameascommonname=false;
 	this->clientcertnotrequired=false;
 	this->overwriteccfiles=true;	
-        this->useauthcontrolfile=false;
-        this->useclientconnectdeferfile=false;
+    this->useauthcontrolfile=false;
+    this->useclientconnectdeferfile=false;
 	this->accountingonly=false;
 	this->nonfatalaccounting=false;
 	this->defacctinteriminterval=0;
+    this->localip="0.0.0.0";
+    this->localport="";
+    this->localproto="unknown";
 	this->parseConfigFile(configfile);
 	
 }
@@ -77,10 +83,7 @@ Config::Config(char * configfile)
 /** The destructur clears the serverlist. */
 Config::~Config(void)
 {
-	
-	
 }
-
 
 
 /** The method parse the configfile for attributes and 
@@ -150,8 +153,8 @@ int Config::parseConfigFile(const char * configfile)
 					else if (stmp =="false") this->overwriteccfiles=false;
 					else return BAD_FILE;
 						
-				}
-                                if (strncmp(line.c_str(),"useauthcontrolfile=",19)==0)
+                }
+                if (strncmp(line.c_str(),"useauthcontrolfile=",19)==0)
 				{
 					
 					string stmp=line.substr(19,line.size()-19);
@@ -161,7 +164,7 @@ int Config::parseConfigFile(const char * configfile)
 					else return BAD_FILE;
 						
 				}
-                                if (strncmp(line.c_str(),"useclientconnectdeferfile=",26)==0)
+                if (strncmp(line.c_str(),"useclientconnectdeferfile=",26)==0)
 				{
 
 					string stmp=line.substr(26,line.size()-26);
@@ -262,7 +265,7 @@ int Config::parseConfigFile(const char * configfile)
 					  }
 					  if (param == "status")
 					  {
-						  //method deletechars don't work, entry has formet: status <file> [time]
+                          //method deletechars don't work, entry has format: status <file> [time]
 						  pos  = line.find_first_of("#");
 						  if (pos != string::npos) 
 						  {
@@ -281,10 +284,28 @@ int Config::parseConfigFile(const char * configfile)
 						  this->deletechars(&line);
 						  if(!line.empty())
 						  {
-							    
 						    this->statusfile=line;
 						  }
-					  }	
+                      }
+                      if (param == "local")
+                      {
+                          this->deletechars(&line);
+                          line.erase(0, 5);
+                          this->setLocalIp(line);
+                      }
+                      if (param == "proto")
+                      {
+                          this->deletechars(&line);
+                          line.erase(0, 5);
+                          this->setLocalProto(line);
+                      }
+                      if (param == "port")
+                      {
+                          this->deletechars(&line);
+                          line.erase(0, 4);
+                          this->setLocalPort(line);
+                      }
+
 				  }
 			  }
 			  file.close();
@@ -615,4 +636,34 @@ int Config::getDefAcctInterimInterval(void)
 void Config::setDefAcctInterimInterval(int b)
 {
  this->defacctinteriminterval=b; 
+}
+
+void Config::setLocalIp(string &ip)
+{
+    this->localip = ip;
+}
+
+string Config::getLocalIp()
+{
+    return this->localip;
+}
+
+void Config::setLocalPort(string &port)
+{
+    this->localport = port;
+}
+
+string Config::getLocalPort()
+{
+    return this->localport;
+}
+
+void Config::setLocalProto(string &line)
+{
+    this->localproto = line;
+}
+
+string Config::getLocalProto()
+{
+    return this->localproto;
 }

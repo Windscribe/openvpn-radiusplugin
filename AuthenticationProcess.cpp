@@ -75,7 +75,7 @@ void AuthenticationProcess::Authentication(PluginContext * context)
 			    user->setDev(context->authsocketforegr.recvStr());
 			    user->setPortnumber(context->authsocketforegr.recvInt());
 			    user->setSessionId(context->authsocketforegr.recvStr());
-			    user->setCallingStationId(context->authsocketforegr.recvStr());
+                user->setCallingStationId(context->authsocketforegr.recvStr());
 			    user->setCommonname(context->authsocketforegr.recvStr());
 				// framed-ip is an @IP if we're renegotiating, "" otherwise
 			    user->setFramedIp(context->authsocketforegr.recvStr());

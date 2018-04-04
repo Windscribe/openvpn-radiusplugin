@@ -83,15 +83,15 @@ void IpcSocket::send(string str)
   	{
   		throw Exception(Exception::SOCKETSEND);
   	}
-        if(len > 0)
-        {
-          //send the string
-          size = write(this->socket, str.c_str(), len);
-          if (size != len)
-          {
-            throw Exception(Exception::SOCKETSEND);
-          }
-        }
+    if(len > 0)
+    {
+      //send the string
+      size = write(this->socket, str.c_str(), len);
+      if (size != len)
+      {
+        throw Exception(Exception::SOCKETSEND);
+      }
+    }
 }
 
 /**The method sends a buffer via the

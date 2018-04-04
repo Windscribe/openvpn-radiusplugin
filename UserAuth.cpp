@@ -52,7 +52,7 @@ int UserAuth::sendAcceptRequestPacket(PluginContext * context)
 	RadiusAttribute		ra1(ATTRIB_User_Name,this->getUsername().c_str()),
 				ra2(ATTRIB_User_Password),
 				ra3(ATTRIB_NAS_Port,this->getPortnumber()),
-				ra4(ATTRIB_Calling_Station_Id,this->getCallingStationId()),
+                ra4(ATTRIB_Calling_Station_Id,this->getCallingStationId()),
 				ra5(ATTRIB_NAS_Identifier),
 				ra6(ATTRIB_NAS_IP_Address),
 				ra7(ATTRIB_NAS_Port_Type),
@@ -88,7 +88,7 @@ int UserAuth::sendAcceptRequestPacket(PluginContext * context)
 	{
 		cerr << getTime() << "RADIUS-PLUGIN: Fail to add attribute ATTRIB_NAS_Port.\n";
 	}
-	if (packet.addRadiusAttribute(&ra4))
+    if (packet.addRadiusAttribute(&ra4))
 	{
 		cerr << getTime() << "RADIUS-PLUGIN: Fail to add attribute ATTRIB_Calling_Station_Id.\n";
 	}
@@ -147,8 +147,6 @@ int UserAuth::sendAcceptRequestPacket(PluginContext * context)
 				cerr << getTime() << "RADIUS-PLUGIN: Fail to add attribute Framed-IP-Address.\n";
 			}
 	}
-	
-	
 	
 	if (DEBUG (context->getVerbosity()))
 		cerr << getTime() << "RADIUS-PLUGIN: Send packet to " << server->getName().c_str() <<".\n";

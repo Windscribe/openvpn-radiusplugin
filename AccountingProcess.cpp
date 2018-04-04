@@ -103,6 +103,7 @@ void AccountingProcess::Accounting(PluginContext * context)
                     user->setSessionId(context->acctsocketforegr.recvStr()) ;
                     user->setDev(context->acctsocketforegr.recvStr()) ;
                     user->setPortnumber(context->acctsocketforegr.recvInt());
+                    user->setCalledStationId(context->acctsocketforegr.recvStr());
                     user->setCallingStationId(context->acctsocketforegr.recvStr());
                     user->setFramedIp(context->acctsocketforegr.recvStr());
                     user->setFramedIp6(context->acctsocketforegr.recvStr());
