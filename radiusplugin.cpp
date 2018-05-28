@@ -498,9 +498,9 @@ error:
 //            }
 //            return OPENVPN_PLUGIN_FUNC_ERROR;
 //        }
-//
-//        ///////////////////////// OPENVPN_PLUGIN_CLIENT_DISCONNECT
-//
+
+        ///////////////////////// OPENVPN_PLUGIN_CLIENT_DISCONNECT
+
 //        if ( type == OPENVPN_PLUGIN_CLIENT_DISCONNECT && context->acctsocketbackgr.getSocket() >= 0 )
 //        {
 //
@@ -568,9 +568,9 @@ error:
 //            }
 //
 //        }
-//
-//        return OPENVPN_PLUGIN_FUNC_ERROR;
-//    }
+
+        return OPENVPN_PLUGIN_FUNC_ERROR;
+    }
 
 
     /** The function is called when the OpenVpn process exits.
