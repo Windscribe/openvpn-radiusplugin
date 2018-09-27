@@ -449,7 +449,14 @@ error:
             /////////////////////////// CLIENT_CONNECT
         }
 
-        if ( type == OPENVPN_PLUGIN_CLIENT_CONNECT || type == OPENVPN_PLUGIN_CLIENT_DISCONNECT )
+        if ( type == OPENVPN_PLUGIN_CLIENT_CONNECT )
+        {
+
+            return OPENVPN_PLUGIN_FUNC_DEFERRED;
+
+        }
+
+        if ( type == OPENVPN_PLUGIN_CLIENT_DISCONNECT )
         {
 
             return OPENVPN_PLUGIN_FUNC_SUCCESS;
