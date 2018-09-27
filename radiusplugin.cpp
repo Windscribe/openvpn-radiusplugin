@@ -448,6 +448,14 @@ error:
             return OPENVPN_PLUGIN_FUNC_ERROR;
             /////////////////////////// CLIENT_CONNECT
         }
+
+        if ( type == OPENVPN_PLUGIN_CLIENT_CONNECT || type == OPENVPN_PLUGIN_CLIENT_DISCONNECT )
+        {
+
+            return OPENVPN_PLUGIN_FUNC_SUCCESS;
+
+        }
+
 //        if ( type == OPENVPN_PLUGIN_CLIENT_CONNECT && context->acctsocketbackgr.getSocket() >= 0 )
 //        {
 //
